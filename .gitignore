@@ -1,6 +1,7 @@
 # Claude Code / harness session logs (local only)
 logs/
 .claude/logs/
+.claude/data/
 
 # Dependencies
 node_modules/

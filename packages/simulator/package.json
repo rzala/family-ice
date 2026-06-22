@@ -1,0 +1,15 @@
+{
+  "name": "@family-ice/simulator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sim": "tsx src/sim.ts",
+    "route:build": "tsx src/route-build.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@family-ice/shared": "*",
+    "mqtt": "^5.8.0"
+  }
+}

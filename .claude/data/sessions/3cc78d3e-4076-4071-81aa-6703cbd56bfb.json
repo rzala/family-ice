@@ -15,6 +15,9 @@
     "who builds the apps, or those will run in a browser on mobile?",
     "what app is it runinng in safari?",
     "I see, so it renders in the app, cool,what next",
-    "go ahead with A"
+    "go ahead with A",
+    "need a better domain, list my cloudfrlare domains",
+    "familyice.trafty.com, use mx cluster ~/repos/mx deploy style",
+    "commit and deploy"
   ]
 }

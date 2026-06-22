@@ -1,0 +1,61 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: familyice
+      POSTGRES_PASSWORD: familyice
+      POSTGRES_DB: familyice
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U familyice']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mqtt:
+    image: eclipse-mosquitto:2
+    ports:
+      - '1883:1883'
+    volumes:
+      - ./infra/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+
+  api:
+    build:
+      context: .
+      dockerfile: packages/backend/Dockerfile
+    environment:
+      PORT: '3000'
+      DATABASE_URL: postgres://familyice:familyice@postgres:5432/familyice
+      REDIS_URL: redis://redis:6379
+      MQTT_URL: mqtt://mqtt:1883
+      # Adapter selection (Principle I): local | aws | azure | gcp
+      MESSAGE_BUS: local
+      GEO_STORE: local
+      PUSH_SERVICE: local
+      DB: local
+      STALE_AFTER_MS: '8000'
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mqtt:
+        condition: service_started
+
+volumes:
+  pgdata:

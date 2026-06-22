@@ -1,0 +1,33 @@
+{
+  "name": "family-ice",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Family Ice — real-time ice cream van proximity tracking POC",
+  "workspaces": [
+    "packages/shared",
+    "packages/backend",
+    "packages/simulator",
+    "packages/mobile"
+  ],
+  "scripts": {
+    "dev": "docker compose up",
+    "build:shared": "npm run build -w @family-ice/shared",
+    "backend:dev": "npm run dev -w @family-ice/backend",
+    "sim": "npm run sim -w @family-ice/simulator --",
+    "route:build": "npm run route:build -w @family-ice/simulator --",
+    "typecheck": "tsc -b packages/shared packages/backend packages/simulator",
+    "lint": "eslint \"packages/**/src/**/*.{ts,tsx}\"",
+    "format": "prettier --write \"packages/**/src/**/*.{ts,tsx}\""
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.16.0",
+    "@typescript-eslint/parser": "^7.16.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
