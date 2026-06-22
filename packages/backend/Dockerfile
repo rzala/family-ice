@@ -3,15 +3,20 @@ FROM node:20-slim
 
 WORKDIR /app
 
-# Workspace manifests first for layer caching.
+# All workspace manifests first (npm needs the full workspace tree to be valid),
+# for layer caching. Source is copied after deps install.
 COPY package.json package-lock.json* tsconfig.base.json ./
 COPY packages/shared/package.json packages/shared/
 COPY packages/backend/package.json packages/backend/
+COPY packages/simulator/package.json packages/simulator/
+COPY packages/mobile/package.json packages/mobile/
 
-# Install all workspaces (simulator/mobile are light dev deps; ok for POC image).
-RUN npm install --workspaces --include-workspace-root || npm install
+# Install ONLY the backend + shared workspaces (plus root tooling incl. tsx).
+# Filtering keeps Expo/React-Native (mobile) and the simulator out of the API image.
+# NODE_ENV is still unset here, so root devDependencies (tsx) are installed.
+RUN npm install -w @family-ice/shared -w @family-ice/backend --include-workspace-root
 
-# Source.
+# Source for the two workspaces we actually run.
 COPY packages/shared packages/shared
 COPY packages/backend packages/backend
 
