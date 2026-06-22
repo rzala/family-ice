@@ -1,0 +1,20 @@
+# Claude Code / harness session logs (local only)
+logs/
+.claude/logs/
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+.expo/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+*.log

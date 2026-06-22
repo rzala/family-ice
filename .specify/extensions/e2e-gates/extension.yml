@@ -1,0 +1,43 @@
+schema_version: "1.0"
+
+extension:
+  id: "e2e-gates"
+  name: "SpecKit E2E Gates"
+  version: "1.0.0"
+  description: "E2E gating framework with Playwright and CTRF for quality gates"
+  author: "madix"
+  repository: "https://github.com/rzala/speckit-review-toolkit"
+  license: "MIT"
+  homepage: "https://github.com/rzala/speckit-review-toolkit"
+
+requires:
+  speckit_version: ">=0.1.0"
+  tools:
+    - name: npx
+      optional: true
+    - name: node
+      optional: true
+
+provides:
+  commands:
+    - name: "speckit.e2e-gates.e2e"
+      file: "commands/speckit.e2e.md"
+      description: "Run E2E gate tests and generate PASS/FAIL verdict"
+      aliases:
+        - "speckit.e2e"
+    - name: "speckit.e2e-gates.e2e-init"
+      file: "commands/speckit.e2e.init.md"
+      description: "Scaffold E2E gating framework with tech stack discovery"
+      aliases:
+        - "speckit.e2e.init"
+    - name: "speckit.e2e-gates.e2e-update"
+      file: "commands/speckit.e2e.update.md"
+      description: "Discover routes, map user journeys, and generate Playwright test suites"
+      aliases:
+        - "speckit.e2e.update"
+
+tags:
+  - "e2e"
+  - "testing"
+  - "playwright"
+  - "quality-gate"

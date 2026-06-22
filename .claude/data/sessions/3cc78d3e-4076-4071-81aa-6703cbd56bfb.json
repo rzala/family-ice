@@ -1,0 +1,12 @@
+{
+  "session_id": "3cc78d3e-4076-4071-81aa-6703cbd56bfb",
+  "prompts": [
+    "want to build a poc around tracking and ice cream van, family frost, for brand protection lets call it family ice, key features: - app that tracks van (when within certain proximity, but if too far it should still highilight that is coming to the street, etc  - sends beacon that top stop here and send push notificaiton for hand raise or just when its in proximity, need to build this around aws/azure and gcp for POC",
+    "does this need a kafka?",
+    "neeed to build infra and one app for users and one for driver ?",
+    "go ahead with A, then draft the plan",
+    "need to simulate that the van approaches the office building where the presentation will be for now the address is 2340, kiskunlachaza kert u. 14",
+    " /speckit-constitution",
+    "/speckit.git.commit"
+  ]
+}

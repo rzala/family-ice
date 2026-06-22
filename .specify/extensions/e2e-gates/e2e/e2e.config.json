@@ -1,0 +1,26 @@
+{
+  "$schema": "./e2e.config.schema.json",
+  "stack": {
+    "frontend": "vanilla",
+    "bundler": "none",
+    "backend": "node-http",
+    "styling": "vanilla"
+  },
+  "auth": {
+    "type": "jwt-localstorage",
+    "tokenKey": "token",
+    "headerFormat": "Bearer {token}",
+    "testLoginEndpoint": "/api/test/login"
+  },
+  "urls": {
+    "baseURL": "http://localhost:5199",
+    "apiURL": "http://localhost:5199",
+    "protectedRoute": "/dashboard"
+  },
+  "selectors": {
+    "convention": "data-testid"
+  },
+  "seed": {
+    "command": ""
+  }
+}

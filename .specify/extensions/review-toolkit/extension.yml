@@ -1,0 +1,47 @@
+schema_version: "1.0"
+
+extension:
+  id: "review-toolkit"
+  name: "SpecKit Review Toolkit"
+  version: "1.0.0"
+  description: "Peer review design artifacts and run linters before implementation"
+  author: "madix"
+  repository: "https://github.com/madix/speckit-review-toolkit"
+  license: "MIT"
+  homepage: "https://github.com/madix/speckit-review-toolkit"
+
+requires:
+  speckit_version: ">=0.1.0"
+  tools:
+    - name: ruff
+      optional: true
+    - name: mypy
+      optional: true
+    - name: bandit
+      optional: true
+    - name: shellcheck
+      optional: true
+
+provides:
+  commands:
+    - name: "speckit.review-toolkit.peer-review"
+      file: "commands/peer-review.md"
+      description: "Review design artifacts (specs, plans, tasks) before implementation"
+      aliases:
+        - "peer-review"
+    - name: "speckit.review-toolkit.eval"
+      file: "commands/eval.md"
+      description: "Run CLI linters and optional external AI review"
+      aliases:
+        - "eval"
+    - name: "speckit.review-toolkit.logbugger-monitor"
+      file: "commands/logbugger-monitor.md"
+      description: "Analyze new LogBugger error groups and write root cause suggestions"
+      aliases:
+        - "logbugger-monitor"
+
+tags:
+  - "review"
+  - "quality"
+  - "linting"
+  - "peer-review"

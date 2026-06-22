@@ -1,0 +1,32 @@
+tier_1:
+  enabled: true
+  tools:
+    - name: ruff
+      command: "ruff check {files}"
+      file_extensions: [".py"]
+      enabled: true
+      timeout_seconds: 30
+
+    - name: mypy
+      command: "mypy --no-error-summary {files}"
+      file_extensions: [".py"]
+      enabled: true
+      timeout_seconds: 60
+
+    - name: bandit
+      command: "bandit -f json {files}"
+      file_extensions: [".py"]
+      enabled: true
+      timeout_seconds: 30
+
+    - name: eslint
+      command: "eslint {files}"
+      file_extensions: [".js", ".jsx", ".ts", ".tsx"]
+      enabled: true
+      timeout_seconds: 30
+
+    - name: shellcheck
+      command: "shellcheck {files}"
+      file_extensions: [".sh", ".bash"]
+      enabled: true
+      timeout_seconds: 30

@@ -1,0 +1,7 @@
+node_modules/
+artifacts/
+results.json
+ctrf-report.json
+verdict.json
+test-results/
+playwright-report/
