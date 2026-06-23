@@ -35,6 +35,14 @@ export async function buildServer(ctx: ServerContext): Promise<FastifyInstance> 
     });
   }
 
+  // Friendly root so hitting the bare URL in a browser isn't a bare 404.
+  app.get('/', async () => ({
+    service: 'Family Ice API',
+    status: 'ok',
+    description: 'Real-time ice cream van proximity tracking',
+    endpoints: ['/health', '/vans', '/auth/session', '/subscriptions', '/push/token', '/ws (WebSocket)'],
+  }));
+
   app.get('/health', async () => ({ ok: true }));
 
   registerAuthRoutes(app, ctx.ports.db, ctx.sessions);
