@@ -2,6 +2,7 @@
   "expo": {
     "name": "Family Ice",
     "slug": "family-ice",
+    "owner": "familyicedemo",
     "scheme": "familyice",
     "version": "0.1.0",
     "orientation": "portrait",
@@ -12,14 +13,20 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Family Ice uses your location to alert you when the ice cream van is approaching your street.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Family Ice uses your location in the background to alert you when the van is nearby.",
-        "UIBackgroundModes": ["location", "remote-notification"]
+        "UIBackgroundModes": [
+          "location",
+          "remote-notification"
+        ]
       }
     },
     "android": {
+      "package": "com.familyicedemo.familyice",
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
-        "ACCESS_BACKGROUND_LOCATION"
+        "ACCESS_BACKGROUND_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ]
     },
     "plugins": [
@@ -28,7 +35,10 @@
     ],
     "extra": {
       "apiBaseUrl": "https://familyice.trafty.com",
-      "wsUrl": "wss://familyice.trafty.com/ws"
+      "wsUrl": "wss://familyice.trafty.com/ws",
+      "eas": {
+        "projectId": "634644e3-afd7-4276-a236-3e0d03a81f25"
+      }
     }
   }
 }
