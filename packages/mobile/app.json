@@ -21,6 +21,11 @@
     },
     "android": {
       "package": "com.familyicedemo.familyice",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCIbWUKqmeOraNWptvXuvKwWvVrl8eoSJE"
+        }
+      },
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
