@@ -27,8 +27,8 @@
       "expo-notifications"
     ],
     "extra": {
-      "apiBaseUrl": "https://familyice.dev.trafty.com",
-      "wsUrl": "wss://familyice.dev.trafty.com/ws"
+      "apiBaseUrl": "https://familyice.trafty.com",
+      "wsUrl": "wss://familyice.trafty.com/ws"
     }
   }
 }
