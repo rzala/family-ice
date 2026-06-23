@@ -47,7 +47,7 @@ async function main(): Promise<void> {
   await startIngest(bus, geo, engine);
 
   // ── HTTP + WS ────────────────────────────────────────────────────────────
-  const app = await buildServer({ ports, hub, sessions });
+  const app = await buildServer({ ports, hub, sessions, engine });
   await app.listen({ host: '0.0.0.0', port: config.port });
   app.log.info(`Family Ice backend listening on :${config.port}`);
 

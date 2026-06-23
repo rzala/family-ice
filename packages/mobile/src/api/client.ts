@@ -35,3 +35,57 @@ export async function registerPushToken(token: string, pushToken: string | null)
     body: JSON.stringify({ pushToken }),
   });
 }
+
+const authJson = (token: string) => ({
+  'content-type': 'application/json',
+  authorization: `Bearer ${token}`,
+});
+
+// ── User Story 3 ──
+export async function raiseHand(
+  token: string,
+  vanId: string,
+  lat: number,
+  lng: number,
+  note: string | null = null,
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/vans/${vanId}/handraise`, {
+    method: 'POST',
+    headers: authJson(token),
+    body: JSON.stringify({ lat, lng, note }),
+  });
+  if (!res.ok && res.status !== 201) throw new Error(`handraise failed: ${res.status}`);
+}
+
+export async function setDuty(token: string, vanId: string, status: 'on_duty' | 'off_duty'): Promise<void> {
+  await fetch(`${API_BASE}/vans/${vanId}/duty`, {
+    method: 'POST',
+    headers: authJson(token),
+    body: JSON.stringify({ status }),
+  });
+}
+
+export interface HandRaiseClusters {
+  vanId: string;
+  clusters: { lat: number; lng: number; count: number; handRaiseIds: string[] }[];
+}
+
+export async function getHandRaises(token: string, vanId: string): Promise<HandRaiseClusters> {
+  const res = await fetch(`${API_BASE}/vans/${vanId}/handraises`, { headers: authJson(token) });
+  return res.json();
+}
+
+export async function confirmStop(
+  token: string,
+  vanId: string,
+  lat: number,
+  lng: number,
+  handRaiseIds: string[],
+): Promise<{ notifiedUsers: number }> {
+  const res = await fetch(`${API_BASE}/vans/${vanId}/stop`, {
+    method: 'POST',
+    headers: authJson(token),
+    body: JSON.stringify({ lat, lng, handRaiseIds }),
+  });
+  return res.json();
+}

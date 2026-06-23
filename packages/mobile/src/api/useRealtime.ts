@@ -1,19 +1,34 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { WsProximityState, WsServerEvent, WsVanPosition } from '@family-ice/shared';
+import type {
+  WsHandRaiseUpdate,
+  WsProximityState,
+  WsServerEvent,
+  WsStopConfirmed,
+  WsVanPosition,
+} from '@family-ice/shared';
 import { WS_URL } from '../config';
 
 export interface RealtimeState {
   connected: boolean;
   van: WsVanPosition | null;
   proximity: WsProximityState | null;
+  handRaises: WsHandRaiseUpdate | null; // driver inbox (live)
+  stop: WsStopConfirmed | null; // user: "we're stopping near you"
 }
 
 /**
- * Maintains the WebSocket to the backend: receives live van positions + per-user proximity
- * events, and exposes a sender for the device's own location (FR-002/FR-013).
+ * WebSocket to the backend. Receives live van positions, per-user proximity, driver-facing
+ * hand-raise clusters, and stop confirmations; sends the device's own location (user) or the
+ * van's location (driver, FR-009).
  */
 export function useRealtime(token: string | null) {
-  const [state, setState] = useState<RealtimeState>({ connected: false, van: null, proximity: null });
+  const [state, setState] = useState<RealtimeState>({
+    connected: false,
+    van: null,
+    proximity: null,
+    handRaises: null,
+    stop: null,
+  });
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -24,25 +39,45 @@ export function useRealtime(token: string | null) {
     ws.onopen = () => setState((s) => ({ ...s, connected: true }));
     ws.onclose = () => setState((s) => ({ ...s, connected: false }));
     ws.onmessage = (ev) => {
-      let parsed: WsServerEvent;
+      let m: WsServerEvent;
       try {
-        parsed = JSON.parse(ev.data as string) as WsServerEvent;
+        m = JSON.parse(ev.data as string) as WsServerEvent;
       } catch {
         return;
       }
-      if (parsed.type === 'van.position') setState((s) => ({ ...s, van: parsed }));
-      else if (parsed.type === 'proximity.state') setState((s) => ({ ...s, proximity: parsed }));
+      switch (m.type) {
+        case 'van.position':
+          setState((s) => ({ ...s, van: m }));
+          break;
+        case 'proximity.state':
+          setState((s) => ({ ...s, proximity: m }));
+          break;
+        case 'handraise.update':
+          setState((s) => ({ ...s, handRaises: m }));
+          break;
+        case 'stop.confirmed':
+          setState((s) => ({ ...s, stop: m }));
+          break;
+      }
     };
 
     return () => ws.close();
   }, [token]);
 
-  const sendUserLocation = useCallback((lat: number, lng: number) => {
+  const send = useCallback((payload: unknown) => {
     const ws = wsRef.current;
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: 'user.location', lat, lng }));
-    }
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(payload));
   }, []);
 
-  return { state, sendUserLocation };
+  const sendUserLocation = useCallback(
+    (lat: number, lng: number) => send({ type: 'user.location', lat, lng }),
+    [send],
+  );
+  const sendVanLocation = useCallback(
+    (vanId: string, lat: number, lng: number, headingDeg: number | null = null) =>
+      send({ type: 'van.location', vanId, lat, lng, headingDeg }),
+    [send],
+  );
+
+  return { state, sendUserLocation, sendVanLocation };
 }

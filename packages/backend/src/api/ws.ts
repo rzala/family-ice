@@ -15,7 +15,7 @@ export function registerWsRoutes(app: FastifyInstance, ctx: ServerContext): void
       return;
     }
 
-    ctx.hub.add(session.userId, socket);
+    ctx.hub.add(session.userId, session.role, socket);
 
     // Replay current on-duty van positions so the map is correct immediately on connect.
     void ctx.ports.geo.listOnDutyVans().then((vans) => {
@@ -44,11 +44,23 @@ export function registerWsRoutes(app: FastifyInstance, ctx: ServerContext): void
       }
       const parsed = WsClientEvent.safeParse(json);
       if (!parsed.success) return;
-      if (parsed.data.type === 'user.location') {
+      const ev = parsed.data;
+      if (ev.type === 'user.location') {
         // Transient — overwrites, never historized (FR-013 privacy).
-        void ctx.ports.geo.setUserLocation(session.userId, {
-          lat: parsed.data.lat,
-          lng: parsed.data.lng,
+        void ctx.ports.geo.setUserLocation(session.userId, { lat: ev.lat, lng: ev.lng });
+      } else if (ev.type === 'van.location' && session.role === 'driver') {
+        // The driver app IS the van (FR-009): treat its location as a van position,
+        // through the same path as MQTT ingest (record + proximity).
+        const ping = {
+          vanId: ev.vanId,
+          lat: ev.lat,
+          lng: ev.lng,
+          headingDeg: ev.headingDeg,
+          speedMps: ev.speedMps,
+          reportedAt: new Date().toISOString(),
+        };
+        void ctx.ports.geo.recordVanPosition(ping).then((accepted) => {
+          if (accepted) return ctx.engine.onVanPing(ping);
         });
       }
     });

@@ -83,7 +83,18 @@ export const WsUserLocation = z.object({
 });
 export type WsUserLocation = z.infer<typeof WsUserLocation>;
 
-export const WsClientEvent = z.discriminatedUnion('type', [WsUserLocation]);
+/** Driver → server: the driver app reporting the van's position (FR-009). Driver role only. */
+export const WsVanLocation = z.object({
+  type: z.literal('van.location'),
+  vanId: z.string(),
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180),
+  headingDeg: z.number().min(0).max(360).nullable().default(null),
+  speedMps: z.number().min(0).nullable().default(null),
+});
+export type WsVanLocation = z.infer<typeof WsVanLocation>;
+
+export const WsClientEvent = z.discriminatedUnion('type', [WsUserLocation, WsVanLocation]);
 export type WsClientEvent = z.infer<typeof WsClientEvent>;
 
 // ── Push notification data payloads (PushService) ────────────────────────────

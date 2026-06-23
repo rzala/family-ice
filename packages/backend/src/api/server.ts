@@ -3,16 +3,20 @@ import websocket from '@fastify/websocket';
 import { config } from '../config.js';
 import type { Ports } from '../ports/index.js';
 import type { WsHub } from '../realtime/hub.js';
+import type { ProximityEngine } from '../proximity/engine.js';
 import { SessionStore, registerAuthRoutes } from './auth.js';
 import { registerWsRoutes } from './ws.js';
 import { registerVanRoutes } from './vans.js';
 import { registerSubscriptionRoutes } from './subscriptions.js';
 import { registerPushRoutes } from './push.js';
+import { registerHandRaiseRoutes } from './handraise.js';
+import { registerStopRoutes } from './stop.js';
 
 export interface ServerContext {
   ports: Ports;
   hub: WsHub;
   sessions: SessionStore;
+  engine: ProximityEngine;
 }
 
 /** Build the Fastify app: health, WebSocket, and feature routes. */
@@ -50,6 +54,8 @@ export async function buildServer(ctx: ServerContext): Promise<FastifyInstance> 
   registerVanRoutes(app, ctx);
   registerSubscriptionRoutes(app, ctx);
   registerPushRoutes(app, ctx);
+  registerHandRaiseRoutes(app, ctx);
+  registerStopRoutes(app, ctx);
 
   // Uniform error shape.
   app.setErrorHandler((err, _req, reply) => {

@@ -64,6 +64,22 @@ export interface SubscriptionRecord {
   radiusM: number;
 }
 
+export interface HandRaiseRecord {
+  id: string;
+  userId: string;
+  vanId: string;
+  lat: number;
+  lng: number;
+  note: string | null;
+  status: 'pending' | 'acknowledged' | 'expired';
+  createdAt: string;
+}
+
+/** A pending hand-raise enriched with the requester's push token (for stop notifications). */
+export interface PendingHandRaise extends HandRaiseRecord {
+  pushToken: string | null;
+}
+
 export interface Db {
   createSession(displayName: string, role: 'user' | 'driver'): Promise<UserRecord>;
   getUser(userId: string): Promise<UserRecord | null>;
@@ -71,6 +87,11 @@ export interface Db {
   addSubscription(userId: string, vanId: string, radiusM: number): Promise<SubscriptionRecord>;
   removeSubscription(subscriptionId: string): Promise<void>;
   setVanDuty(vanId: string, status: 'on_duty' | 'off_duty'): Promise<void>;
+  // ── Hand-raise / stop (User Story 3) ──
+  addHandRaise(userId: string, vanId: string, lat: number, lng: number, note: string | null): Promise<HandRaiseRecord>;
+  listPendingHandRaises(vanId: string): Promise<PendingHandRaise[]>;
+  acknowledgeHandRaises(ids: string[]): Promise<void>;
+  addStopConfirmation(vanId: string, lat: number, lng: number, handRaiseIds: string[]): Promise<string>;
   close(): Promise<void>;
 }
 

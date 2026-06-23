@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
-import type { Db, SubscriptionRecord, UserRecord } from '../../ports/index.js';
+import type { Db, HandRaiseRecord, PendingHandRaise, SubscriptionRecord, UserRecord } from '../../ports/index.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const MIGRATIONS_DIR = join(here, 'db', 'migrations');
@@ -61,6 +61,57 @@ export class PgDb implements Db {
     await this.pool.query(`UPDATE vans SET status = $2 WHERE id = $1`, [vanId, status]);
   }
 
+  async addHandRaise(
+    userId: string,
+    vanId: string,
+    lat: number,
+    lng: number,
+    note: string | null,
+  ): Promise<HandRaiseRecord> {
+    const { rows } = await this.pool.query(
+      `INSERT INTO hand_raises (user_id, van_id, geom, note)
+       VALUES ($1, $2, $3::geography, $4)
+       RETURNING id, user_id, van_id, note, status, created_at,
+                 ST_Y(geom::geometry) AS lat, ST_X(geom::geometry) AS lng`,
+      [userId, vanId, `SRID=4326;POINT(${lng} ${lat})`, note],
+    );
+    return mapHandRaise(rows[0]);
+  }
+
+  async listPendingHandRaises(vanId: string): Promise<PendingHandRaise[]> {
+    const { rows } = await this.pool.query(
+      `SELECT h.id, h.user_id, h.van_id, h.note, h.status, h.created_at,
+              ST_Y(h.geom::geometry) AS lat, ST_X(h.geom::geometry) AS lng, u.push_token
+       FROM hand_raises h JOIN users u ON u.id = h.user_id
+       WHERE h.van_id = $1 AND h.status = 'pending'
+       ORDER BY h.created_at`,
+      [vanId],
+    );
+    return rows.map((r) => ({ ...mapHandRaise(r), pushToken: r.push_token }));
+  }
+
+  async acknowledgeHandRaises(ids: string[]): Promise<void> {
+    if (ids.length === 0) return;
+    await this.pool.query(
+      `UPDATE hand_raises SET status = 'acknowledged' WHERE id = ANY($1::uuid[])`,
+      [ids],
+    );
+  }
+
+  async addStopConfirmation(
+    vanId: string,
+    lat: number,
+    lng: number,
+    handRaiseIds: string[],
+  ): Promise<string> {
+    const { rows } = await this.pool.query(
+      `INSERT INTO stop_confirmations (van_id, geom, hand_raise_ids)
+       VALUES ($1, $2::geography, $3::uuid[]) RETURNING id`,
+      [vanId, `SRID=4326;POINT(${lng} ${lat})`, handRaiseIds],
+    );
+    return rows[0].id;
+  }
+
   /** Exposed for the GeoStore adapter, which shares the same pool. */
   get rawPool(): pg.Pool {
     return this.pool;
@@ -73,4 +124,14 @@ export class PgDb implements Db {
 
 function mapUser(r: { id: string; display_name: string; role: string; push_token: string | null }): UserRecord {
   return { id: r.id, displayName: r.display_name, role: r.role as 'user' | 'driver', pushToken: r.push_token };
+}
+
+function mapHandRaise(r: {
+  id: string; user_id: string; van_id: string; note: string | null;
+  status: string; created_at: string; lat: number; lng: number;
+}): HandRaiseRecord {
+  return {
+    id: r.id, userId: r.user_id, vanId: r.van_id, lat: r.lat, lng: r.lng,
+    note: r.note, status: r.status as HandRaiseRecord['status'], createdAt: r.created_at,
+  };
 }
