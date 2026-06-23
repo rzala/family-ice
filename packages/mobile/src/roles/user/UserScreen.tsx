@@ -3,6 +3,7 @@ import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'rea
 import { createSession, raiseHand, subscribeToVan } from '../../api/client';
 import { useRealtime } from '../../api/useRealtime';
 import { useDeviceLocation } from '../../location/useDeviceLocation';
+import { usePushRegistration } from '../../notifications/usePushRegistration';
 import { MapScreen } from '../../map/MapScreen';
 import { DEMO_VAN_ID } from '../../config';
 
@@ -29,6 +30,7 @@ export function UserScreen() {
 
   const { state, sendUserLocation } = useRealtime(token);
   const { granted, coords } = useDeviceLocation(sendUserLocation);
+  usePushRegistration(token);
 
   const onRaiseHand = async () => {
     if (!token || !coords) {

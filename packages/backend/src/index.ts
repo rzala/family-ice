@@ -9,6 +9,7 @@ import { WsHub } from './realtime/hub.js';
 import { SessionStore } from './api/auth.js';
 import { buildServer } from './api/server.js';
 import { ProximityEngine } from './proximity/engine.js';
+import { Notifier } from './proximity/notifier.js';
 import { startIngest } from './ingest/index.js';
 
 /**
@@ -43,7 +44,8 @@ async function main(): Promise<void> {
   const sessions = new SessionStore();
 
   // ── Domain wiring ──────────────────────────────────────────────────────────
-  const engine = new ProximityEngine(geo, hub, config.proximity);
+  const notifier = new Notifier(db, push, config.proximity.visitCooldownMs);
+  const engine = new ProximityEngine(geo, hub, config.proximity, notifier);
   await startIngest(bus, geo, engine);
 
   // ── HTTP + WS ────────────────────────────────────────────────────────────

@@ -23,6 +23,9 @@ export const config = {
     hereMaxM: 50,
     // Only treat a van as "approaching" if its bearing is within this cone of the user.
     headingToleranceDeg: 60,
+    // A visit goes stale after this idle gap; the next approach opens a fresh visit and
+    // re-notifies (prevents one fly-by from suppressing a genuine later approach).
+    visitCooldownMs: 120_000,
   },
   staleAfterMs: Number(process.env.STALE_AFTER_MS ?? 8000),
 

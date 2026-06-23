@@ -2,6 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
+import type { ProximityState } from '@family-ice/shared';
 import type { Db, HandRaiseRecord, PendingHandRaise, SubscriptionRecord, UserRecord } from '../../ports/index.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -110,6 +111,47 @@ export class PgDb implements Db {
       [vanId, `SRID=4326;POINT(${lng} ${lat})`, handRaiseIds],
     );
     return rows[0].id;
+  }
+
+  async findOrRotateVisit(userId: string, vanId: string, cooldownMs: number): Promise<{ id: string }> {
+    const { rows } = await this.pool.query(
+      `SELECT id, closed_at, last_ping_at FROM visits
+       WHERE user_id = $1 AND van_id = $2 ORDER BY opened_at DESC LIMIT 1`,
+      [userId, vanId],
+    );
+    const latest = rows[0];
+    if (latest && !latest.closed_at) {
+      const idleMs = Date.now() - new Date(latest.last_ping_at).getTime();
+      if (idleMs < cooldownMs) {
+        await this.pool.query(`UPDATE visits SET last_ping_at = now() WHERE id = $1`, [latest.id]);
+        return { id: latest.id };
+      }
+      // Stale open visit → close it before opening a fresh one.
+      await this.pool.query(`UPDATE visits SET closed_at = now() WHERE id = $1`, [latest.id]);
+    }
+    const ins = await this.pool.query(
+      `INSERT INTO visits (user_id, van_id) VALUES ($1, $2) RETURNING id`,
+      [userId, vanId],
+    );
+    return { id: ins.rows[0].id };
+  }
+
+  async setVisitState(visitId: string, state: ProximityState): Promise<void> {
+    await this.pool.query(`UPDATE visits SET current_state = $2 WHERE id = $1`, [visitId, state]);
+  }
+
+  async recordNotificationOnce(
+    visitId: string,
+    userId: string,
+    vanId: string,
+    state: ProximityState,
+  ): Promise<boolean> {
+    const { rowCount } = await this.pool.query(
+      `INSERT INTO notifications (visit_id, user_id, van_id, state)
+       VALUES ($1, $2, $3, $4) ON CONFLICT (visit_id, state) DO NOTHING`,
+      [visitId, userId, vanId, state],
+    );
+    return rowCount === 1;
   }
 
   /** Exposed for the GeoStore adapter, which shares the same pool. */

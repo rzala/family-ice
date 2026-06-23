@@ -2,6 +2,7 @@ import type { VanPing } from '@family-ice/shared';
 import type { GeoStore } from '../ports/index.js';
 import type { Realtime } from '../realtime/hub.js';
 import { classify, type ProximityConfig } from './classify.js';
+import type { Notifier } from './notifier.js';
 
 /**
  * Proximity engine (Constitution Principle IV).
@@ -18,6 +19,7 @@ export class ProximityEngine {
     private readonly geo: GeoStore,
     private readonly realtime: Realtime,
     private readonly cfg: ProximityConfig,
+    private readonly notifier?: Notifier,
   ) {}
 
   async onVanPing(ping: VanPing): Promise<void> {
@@ -40,6 +42,7 @@ export class ProximityEngine {
     for (const u of nearby) {
       const c = classify(vanPoint, ping.headingDeg, ping.speedMps, u.location, this.cfg);
       if (c.state === 'none') continue;
+      // Foreground live banner (US1): emit current state every ping (idempotent display).
       this.realtime.toUser(u.userId, {
         type: 'proximity.state',
         vanId: ping.vanId,
@@ -47,6 +50,8 @@ export class ProximityEngine {
         distanceM: Math.round(c.distanceM),
         etaSeconds: c.etaSeconds,
       });
+      // Background push (US2): de-duplicated, at most one per state per visit.
+      void this.notifier?.handle(u.userId, ping.vanId, u.pushToken, c);
     }
   }
 }

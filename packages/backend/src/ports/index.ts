@@ -92,6 +92,12 @@ export interface Db {
   listPendingHandRaises(vanId: string): Promise<PendingHandRaise[]>;
   acknowledgeHandRaises(ids: string[]): Promise<void>;
   addStopConfirmation(vanId: string, lat: number, lng: number, handRaiseIds: string[]): Promise<string>;
+  // ── Proximity visits + dedup (User Story 2) ──
+  /** Return the active visit for (user,van), rotating to a fresh one if the last is stale. */
+  findOrRotateVisit(userId: string, vanId: string, cooldownMs: number): Promise<{ id: string }>;
+  setVisitState(visitId: string, state: ProximityState): Promise<void>;
+  /** Record a notification for (visit,state); returns true only if it was newly inserted (dedup). */
+  recordNotificationOnce(visitId: string, userId: string, vanId: string, state: ProximityState): Promise<boolean>;
   close(): Promise<void>;
 }
 
