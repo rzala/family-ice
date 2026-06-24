@@ -75,6 +75,11 @@ export async function getHandRaises(token: string, vanId: string): Promise<HandR
   return res.json();
 }
 
+/** (Re)start the self-contained server-side demo drive toward subscribers. */
+export async function startDemoDrive(token: string, vanId: string): Promise<void> {
+  await fetch(`${API_BASE}/vans/${vanId}/demo`, { method: 'POST', headers: authJson(token) });
+}
+
 export async function confirmStop(
   token: string,
   vanId: string,

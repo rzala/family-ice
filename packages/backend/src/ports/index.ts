@@ -96,6 +96,8 @@ export interface Db {
   /** Return the active visit for (user,van), rotating to a fresh one if the last is stale. */
   findOrRotateVisit(userId: string, vanId: string, cooldownMs: number): Promise<{ id: string }>;
   setVisitState(visitId: string, state: ProximityState): Promise<void>;
+  /** Close all open visits for a van (used to reset the demo so pushes re-fire). */
+  closeOpenVisitsForVan(vanId: string): Promise<void>;
   /** Record a notification for (visit,state); returns true only if it was newly inserted (dedup). */
   recordNotificationOnce(visitId: string, userId: string, vanId: string, state: ProximityState): Promise<boolean>;
   close(): Promise<void>;

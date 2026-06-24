@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
-import { createSession, raiseHand, subscribeToVan } from '../../api/client';
+import { createSession, raiseHand, startDemoDrive, subscribeToVan } from '../../api/client';
 import { useRealtime } from '../../api/useRealtime';
 import { useDeviceLocation } from '../../location/useDeviceLocation';
 import { usePushRegistration } from '../../notifications/usePushRegistration';
@@ -48,12 +48,25 @@ export function UserScreen() {
     }
   };
 
+  const onResetDemo = async () => {
+    if (!token) return;
+    try {
+      await startDemoDrive(token, DEMO_VAN_ID);
+    } catch {
+      /* ignore — demo trigger is best-effort */
+    }
+  };
+
   if (error) return <Centered>Could not reach backend.{'\n'}{error}</Centered>;
   if (!token) return <Centered><ActivityIndicator /> Connecting…</Centered>;
 
   return (
     <View style={styles.fill}>
       <MapScreen van={state.van} proximity={state.proximity} user={coords} />
+
+      <Pressable style={styles.resetBtn} onPress={onResetDemo}>
+        <Text style={styles.resetText}>🔄 Send van</Text>
+      </Pressable>
 
       {state.stop && (
         <View style={styles.stopBanner}>
@@ -92,6 +105,8 @@ const styles = StyleSheet.create({
   centeredText: { textAlign: 'center', color: '#374151' },
   note: { position: 'absolute', bottom: 92, left: 12, right: 12, backgroundColor: '#f59e0b', padding: 10, borderRadius: 10 },
   noteText: { color: 'white', textAlign: 'center' },
+  resetBtn: { position: 'absolute', top: 12, right: 12, backgroundColor: 'rgba(17,24,39,0.85)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
+  resetText: { color: 'white', fontWeight: '700' },
   stopBanner: { position: 'absolute', top: 110, left: 12, right: 12, backgroundColor: '#16a34a', padding: 14, borderRadius: 12 },
   stopText: { color: 'white', fontSize: 16, fontWeight: '700', textAlign: 'center' },
   fab: { position: 'absolute', bottom: 28, left: 24, right: 24, backgroundColor: '#db2777', padding: 18, borderRadius: 16, alignItems: 'center' },

@@ -140,6 +140,13 @@ export class PgDb implements Db {
     await this.pool.query(`UPDATE visits SET current_state = $2 WHERE id = $1`, [visitId, state]);
   }
 
+  async closeOpenVisitsForVan(vanId: string): Promise<void> {
+    await this.pool.query(
+      `UPDATE visits SET closed_at = now() WHERE van_id = $1 AND closed_at IS NULL`,
+      [vanId],
+    );
+  }
+
   async recordNotificationOnce(
     visitId: string,
     userId: string,

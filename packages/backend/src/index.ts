@@ -10,6 +10,7 @@ import { SessionStore } from './api/auth.js';
 import { buildServer } from './api/server.js';
 import { ProximityEngine } from './proximity/engine.js';
 import { Notifier } from './proximity/notifier.js';
+import { DemoDriver } from './demo/driver.js';
 import { startIngest } from './ingest/index.js';
 
 /**
@@ -46,10 +47,11 @@ async function main(): Promise<void> {
   // ── Domain wiring ──────────────────────────────────────────────────────────
   const notifier = new Notifier(db, push, config.proximity.visitCooldownMs);
   const engine = new ProximityEngine(geo, hub, config.proximity, notifier);
+  const demo = new DemoDriver(geo, engine, db);
   await startIngest(bus, geo, engine);
 
   // ── HTTP + WS ────────────────────────────────────────────────────────────
-  const app = await buildServer({ ports, hub, sessions, engine });
+  const app = await buildServer({ ports, hub, sessions, engine, demo });
   await app.listen({ host: '0.0.0.0', port: config.port });
   app.log.info(`Family Ice backend listening on :${config.port}`);
 
