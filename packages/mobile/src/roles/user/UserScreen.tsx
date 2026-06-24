@@ -48,12 +48,17 @@ export function UserScreen() {
     }
   };
 
+  const [sending, setSending] = useState(false);
   const onResetDemo = async () => {
-    if (!token) return;
+    if (!token || sending) return;
+    setSending(true);
     try {
       await startDemoDrive(token, DEMO_VAN_ID);
-    } catch {
-      /* ignore — demo trigger is best-effort */
+      Alert.alert('🚐 Van dispatched', 'It starts a few streets north and heads your way (~5 min ETA, arrives in ~2).');
+    } catch (e) {
+      Alert.alert('Could not start the van', String(e));
+    } finally {
+      setSending(false);
     }
   };
 
@@ -64,8 +69,8 @@ export function UserScreen() {
     <View style={styles.fill}>
       <MapScreen van={state.van} proximity={state.proximity} user={coords} />
 
-      <Pressable style={styles.resetBtn} onPress={onResetDemo}>
-        <Text style={styles.resetText}>🔄 Send van</Text>
+      <Pressable style={[styles.resetBtn, sending && styles.resetBusy]} onPress={onResetDemo} disabled={sending}>
+        <Text style={styles.resetText}>{sending ? '🚐 Sending…' : '🔄 Send van'}</Text>
       </Pressable>
 
       {state.stop && (
@@ -106,6 +111,7 @@ const styles = StyleSheet.create({
   note: { position: 'absolute', bottom: 92, left: 12, right: 12, backgroundColor: '#f59e0b', padding: 10, borderRadius: 10 },
   noteText: { color: 'white', textAlign: 'center' },
   resetBtn: { position: 'absolute', top: 12, right: 12, backgroundColor: 'rgba(17,24,39,0.85)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
+  resetBusy: { opacity: 0.6 },
   resetText: { color: 'white', fontWeight: '700' },
   stopBanner: { position: 'absolute', top: 110, left: 12, right: 12, backgroundColor: '#16a34a', padding: 14, borderRadius: 12 },
   stopText: { color: 'white', fontSize: 16, fontWeight: '700', textAlign: 'center' },

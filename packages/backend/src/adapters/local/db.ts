@@ -40,6 +40,11 @@ export class PgDb implements Db {
   }
 
   async setPushToken(userId: string, token: string | null): Promise<void> {
+    // A device's push token belongs to exactly one user. Releasing it from any other account
+    // prevents duplicate notifications when the app mints a new session per launch.
+    if (token) {
+      await this.pool.query(`UPDATE users SET push_token = NULL WHERE push_token = $1 AND id <> $2`, [token, userId]);
+    }
     await this.pool.query(`UPDATE users SET push_token = $2 WHERE id = $1`, [userId, token]);
   }
 
