@@ -91,6 +91,8 @@ export interface Db {
   addHandRaise(userId: string, vanId: string, lat: number, lng: number, note: string | null): Promise<HandRaiseRecord>;
   listPendingHandRaises(vanId: string): Promise<PendingHandRaise[]>;
   acknowledgeHandRaises(ids: string[]): Promise<void>;
+  /** Expire all still-pending hand-raises for a van (used to reset the demo clean). */
+  expirePendingHandRaises(vanId: string): Promise<void>;
   addStopConfirmation(vanId: string, lat: number, lng: number, handRaiseIds: string[]): Promise<string>;
   // ── Proximity visits + dedup (User Story 2) ──
   /** Return the active visit for (user,van), rotating to a fresh one if the last is stale. */

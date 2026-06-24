@@ -31,6 +31,7 @@ export class ProximityEngine {
       lng: ping.lng,
       headingDeg: ping.headingDeg,
       stale: false,
+      stopped: false,
       at: ping.reportedAt,
     });
 

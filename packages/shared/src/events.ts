@@ -31,6 +31,8 @@ export const WsVanPosition = z.object({
   lng: z.number(),
   headingDeg: z.number().nullable(),
   stale: z.boolean(),
+  // True when the van has halted to serve (its "stop sensor" / driver out of the van).
+  stopped: z.boolean().default(false),
   at: z.string(),
 });
 export type WsVanPosition = z.infer<typeof WsVanPosition>;

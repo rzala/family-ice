@@ -44,7 +44,9 @@ export class DemoDriver {
 
   async start(vanId: string): Promise<void> {
     this.stop();
+    // Clean reset: clear visits (pushes re-fire) and any stale pending hand-raises.
     await this.db.closeOpenVisitsForVan(vanId);
+    await this.db.expirePendingHandRaises(vanId);
 
     this.vanId = vanId;
     this.route = KERT_UTCA_ROUTE;
@@ -97,7 +99,11 @@ export class DemoDriver {
     this.traveled += this.dir * stepM;
     if (this.traveled >= this.totalLen) {
       this.traveled = this.totalLen;
-      if (this.dir === 1) this.stop(); // reached the end with nobody to stop for
+      if (this.dir === 1) {
+        const end = this.posAt(this.totalLen);
+        this.broadcastStopped(end.lat, end.lng); // reached the end → halt + show stopped
+        this.stop();
+      }
     } else if (this.traveled <= 0) {
       this.traveled = 0;
       this.dir = 1;
@@ -124,6 +130,21 @@ export class DemoDriver {
         data: { kind: 'stop', vanId: this.vanId, lat: stop.lat, lng: stop.lng },
       });
     }
+    this.broadcastStopped(stop.lat, stop.lng);
+  }
+
+  /** Signal the van has halted to serve (its stop sensor) so the map shows it as stopped. */
+  private broadcastStopped(lat: number, lng: number): void {
+    this.realtime.broadcastVanPosition({
+      type: 'van.position',
+      vanId: this.vanId,
+      lat,
+      lng,
+      headingDeg: null,
+      stale: false,
+      stopped: true,
+      at: new Date().toISOString(),
+    });
   }
 
   stop(): void {

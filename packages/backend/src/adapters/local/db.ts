@@ -104,6 +104,13 @@ export class PgDb implements Db {
     );
   }
 
+  async expirePendingHandRaises(vanId: string): Promise<void> {
+    await this.pool.query(
+      `UPDATE hand_raises SET status = 'expired' WHERE van_id = $1 AND status = 'pending'`,
+      [vanId],
+    );
+  }
+
   async addStopConfirmation(
     vanId: string,
     lat: number,

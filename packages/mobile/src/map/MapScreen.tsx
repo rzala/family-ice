@@ -63,13 +63,28 @@ export function MapScreen({ van, proximity, user }: Props) {
         {vanMarker && (
           <Marker
             coordinate={{ latitude: vanMarker.lat, longitude: vanMarker.lng }}
-            title="Family Ice"
-            description={van!.stale ? 'last known position (stale)' : vanMarker.offscreen ? 'off-screen — tap to locate' : 'live'}
+            title={van!.stopped ? 'Family Ice — STOPPED here 🛑' : 'Family Ice'}
+            description={
+              van!.stopped
+                ? 'Stopped & serving'
+                : van!.stale
+                  ? 'last known position (stale)'
+                  : vanMarker.offscreen
+                    ? 'off-screen — tap to locate'
+                    : 'live'
+            }
             anchor={{ x: 0.5, y: 0.5 }}
           >
-            <View style={[styles.vanPin, van!.stale && styles.vanStale, vanMarker.offscreen && styles.vanEdge]}>
-              <Text style={styles.vanEmoji}>🚐</Text>
-              {vanMarker.offscreen && (
+            <View
+              style={[
+                styles.vanPin,
+                van!.stale && styles.vanStale,
+                vanMarker.offscreen && styles.vanEdge,
+                van!.stopped && styles.vanStopped,
+              ]}
+            >
+              <Text style={styles.vanEmoji}>{van!.stopped ? '🛑' : '🚐'}</Text>
+              {vanMarker.offscreen && !van!.stopped && (
                 <Text style={[styles.arrow, { transform: [{ rotate: `${vanMarker.arrowDeg}deg` }] }]}>➤</Text>
               )}
             </View>
@@ -102,6 +117,7 @@ const styles = StyleSheet.create({
   },
   vanStale: { backgroundColor: '#9ca3af' },
   vanEdge: { backgroundColor: '#2563eb' },
+  vanStopped: { backgroundColor: '#16a34a', borderColor: '#bbf7d0' },
   vanEmoji: { fontSize: 22 },
   arrow: { position: 'absolute', top: -14, color: '#2563eb', fontSize: 16, fontWeight: '900' },
 });
