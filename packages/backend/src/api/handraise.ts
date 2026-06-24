@@ -21,6 +21,9 @@ export function registerHandRaiseRoutes(app: FastifyInstance, ctx: ServerContext
 
     const raise = await ctx.ports.db.addHandRaise(session.userId, vanId, body.lat, body.lng, body.note);
     ctx.hub.toDrivers(await buildHandRaiseUpdate(ctx.ports.db, vanId));
+    // The demo driver becomes aware and will stop on its route at this spot (reversing if it's
+    // within 500 m behind). No detour.
+    ctx.demo.noteHandRaise(vanId, session.userId, body.lat, body.lng);
     return reply.status(201).send(raise);
   });
 

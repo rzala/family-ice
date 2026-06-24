@@ -47,7 +47,7 @@ async function main(): Promise<void> {
   // ── Domain wiring ──────────────────────────────────────────────────────────
   const notifier = new Notifier(db, push, config.proximity.visitCooldownMs);
   const engine = new ProximityEngine(geo, hub, config.proximity, notifier);
-  const demo = new DemoDriver(geo, engine, db);
+  const demo = new DemoDriver(geo, engine, db, hub, push);
   await startIngest(bus, geo, engine);
 
   // ── HTTP + WS ────────────────────────────────────────────────────────────
