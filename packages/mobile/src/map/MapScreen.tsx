@@ -94,7 +94,13 @@ export function MapScreen({ van, proximity, user }: Props) {
           <Marker coordinate={{ latitude: user.lat, longitude: user.lng }} title="You" pinColor="blue" />
         )}
       </MapView>
-      <ApproachBanner proximity={proximity} />
+      {van?.stopped ? (
+        <View style={styles.stoppedBanner}>
+          <Text style={styles.stoppedText}>🛑 The van has stopped — come grab your ice cream! 🍦</Text>
+        </View>
+      ) : (
+        <ApproachBanner proximity={proximity} />
+      )}
     </View>
   );
 }
@@ -118,6 +124,8 @@ const styles = StyleSheet.create({
   vanStale: { backgroundColor: '#9ca3af' },
   vanEdge: { backgroundColor: '#2563eb' },
   vanStopped: { backgroundColor: '#16a34a', borderColor: '#bbf7d0' },
+  stoppedBanner: { position: 'absolute', top: 56, left: 12, right: 12, padding: 14, borderRadius: 12, backgroundColor: '#16a34a' },
+  stoppedText: { color: 'white', fontSize: 16, fontWeight: '800', textAlign: 'center' },
   vanEmoji: { fontSize: 22 },
   arrow: { position: 'absolute', top: -14, color: '#2563eb', fontSize: 16, fontWeight: '900' },
 });
